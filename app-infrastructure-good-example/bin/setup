@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# Perform patching
+sudo yum update -y && sudo yum upgrade -y
+
+# Install nginx
+sudo amazon-linux-extras install -y nginx1.12
+
+# Start nginx
+sudo systemctl start nginx
