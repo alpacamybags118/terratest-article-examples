@@ -5,28 +5,28 @@ provider "aws" {
 
 # Loading some VPC information we will need later on.
 data "aws_vpc" "vpc" {
-    id = var.vpc_id
+  id = var.vpc_id
 }
 
 # We are loading the base Amazon Linux 2 AMI and will run a bootstrap on top to install a sample app
 data "aws_ami" "sample_app" {
-    most_recent = true
-    owners = ["amazon"]
+  most_recent = true
+  owners      = ["amazon"]
 
-    filter {
-        name = "image-id"
-        values = ["ami-0e38b48473ea57778"]
-    }
+  filter {
+    name   = "image-id"
+    values = ["ami-0e38b48473ea57778"]
+  }
 }
 
 # This is the security group we will attach to our ec2 instances. We will only allow traffic in
 # from the VPC
 resource "aws_security_group" "ec2_sg" {
-    name = "startup-app-ec2-sg"
-    description = "SG for EC2 instances for Startup App"
-    vpc_id = var.vpc_id
+  name        = "startup-app-ec2-sg"
+  description = "SG for EC2 instances for Startup App"
+  vpc_id      = var.vpc_id
 
-    ingress {
+  ingress {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
@@ -34,10 +34,10 @@ resource "aws_security_group" "ec2_sg" {
   }
 
   egress {
-    from_port       = 0
-    to_port         = 0
-    protocol        = "-1"
-    cidr_blocks     = ["0.0.0.0/0"]
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
@@ -45,7 +45,7 @@ resource "aws_security_group" "ec2_sg" {
 resource "aws_instance" "application" {
   count                = 2
   iam_instance_profile = aws_iam_instance_profile.profile.name
-  user_data = file("bin/setup")
+  user_data            = file("bin/setup")
 
   ami = data.aws_ami.sample_app.id
 
@@ -60,8 +60,8 @@ resource "aws_instance" "application" {
     volume_size = "10"
   }
 
-  vpc_security_group_ids      = [aws_security_group.ec2_sg.id]
-  subnet_id                   = var.private_subnet_ids[0]
+  vpc_security_group_ids = [aws_security_group.ec2_sg.id]
+  subnet_id              = var.private_subnet_ids[0]
 }
 
 resource "aws_iam_instance_profile" "profile" {
@@ -93,32 +93,32 @@ EOF
 # This is the security group we will attach to our load balancer. We will allow traffic
 # from the public internet.
 resource "aws_security_group" "alb_sg" {
-    name = "startup-app-alb-sg"
-    description = "SG for Load Balancer for Startup App"
-    vpc_id = var.vpc_id
+  name        = "startup-app-alb-sg"
+  description = "SG for Load Balancer for Startup App"
+  vpc_id      = var.vpc_id
 
-    ingress {
-      from_port   = 80
-      to_port     = 80
-      protocol    = "tcp"
-      cidr_blocks = ["0.0.0.0/0"]
-    }
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 
   egress {
-    from_port       = 0
-    to_port         = 0
-    protocol        = "-1"
-    cidr_blocks     = ["0.0.0.0/0"]
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
 # This will create the load balancer that will route traffic between our EC2s
 resource "aws_lb" "app_lb" {
-    name = "startup-app-lb"
-    internal = false
-    load_balancer_type = "application"
-    security_groups = [aws_security_group.alb_sg.id]
-    subnets = var.public_subnet_ids
+  name               = "startup-app-lb"
+  internal           = false
+  load_balancer_type = "application"
+  security_groups    = [aws_security_group.alb_sg.id]
+  subnets            = var.public_subnet_ids
 }
 
 # This creates the listener for the target group. It will forward traffic on port 80 to
