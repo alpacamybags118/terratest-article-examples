@@ -22,6 +22,17 @@ or
 ```
 terraform plan --var-file path/to/varfile
 ```
+to validate things are working. You can then run
+```
+terraform apply
+```
+
+or
+
+```
+terraform apply --var-file path/to/varfile
+```
+to actually create the resources.
 
 ## Running the tests
 
